@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>スターコインレート</title>
+<link rel="icon" href="https://img.pikbest.com/wp/202408/premium-quality-guarantee-label-with-star-icon-on-3d-gold-coins-illustrated_9748493.jpg!bw800" sizes="16×16" type="image/png" />  
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg:#0b1020;
+  --card:#121a2b;
+  --line:#24304a;
+  --text:#f8fafc;
+  --sub:#94a3b8;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#38bdf8;
+  --gold:#facc15;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  padding:20px;
+  background:
+    radial-gradient(circle at top,#172554 0%,#0b1020 60%);
+  color:var(--text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.container{
+  max-width:1150px;
+  margin:auto;
+}
+
+.title{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:24px;
+}
+
+.coin{
+  width:74px;
+  height:74px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:36px;
+  font-weight:900;
+  background:
+    radial-gradient(circle at 30% 30%,#fff7b2 0%,#facc15 40%,#eab308 100%);
+  color:#78350f;
+  box-shadow:0 0 35px rgba(250,204,21,.5);
+}
+
+h1{
+  margin:0;
+  font-size:38px;
+}
+
+.sub{
+  color:var(--sub);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px;
+  margin-bottom:18px;
+}
+
+.card{
+  background:rgba(18,26,43,.95);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+}
+
+.label{
+  color:var(--sub);
+  font-size:14px;
+  margin-bottom:10px;
+}
+
+.value{
+  font-size:34px;
+  font-weight:900;
+}
+
+.rate{
+  color:var(--gold);
+  text-shadow:0 0 15px rgba(250,204,21,.35);
+}
+
+.cash{
+  color:var(--green);
+}
+
+.profit.plus{
+  color:var(--green);
+}
+
+.profit.minus{
+  color:var(--red);
+}
+
+.trade-grid{
+  display:grid;
+  gap:16px;
+  margin-top:12px;
+}
+
+.trade-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+button{
+  flex:1;
+  min-width:170px;
+  border:none;
+  border-radius:16px;
+  padding:15px;
+  color:white;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.18s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+}
+
+.buy{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+.sell{
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border:none;
+  outline:none;
+  border-radius:14px;
+  background:#1e293b;
+  color:white;
+  font-size:16px;
+}
+
+.small{
+  font-size:13px;
+  color:var(--sub);
+}
+
+.chart-wrap{
+  margin-top:18px;
+  background:rgba(18,26,43,.95);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:18px;
+}
+
+canvas{
+  width:100% !important;
+  height:420px !important;
+}
+
+.log{
+  margin-top:18px;
+  background:rgba(18,26,43,.95);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:18px;
+  max-height:260px;
+  overflow:auto;
+}
+
+.log-item{
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  color:#dbeafe;
+}
+
+.flash{
+  animation:flash .3s;
+}
+
+@keyframes flash{
+  0%{
+    transform:scale(1);
+  }
+  50%{
+    transform:scale(1.03);
+  }
+  100%{
+    transform:scale(1);
+  }
+}
+
+@media (max-width:700px){
+
+  h1{
+    font-size:28px;
+  }
+
+  .value{
+    font-size:28px;
+  }
+
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="title">
+
+    <div class="coin">
+      ★
+    </div>
+
+    <div>
+      <h1>スターコインレート</h1>
+      <div class="sub">
+        リアルタイム仮想通貨シミュレーター
+      </div>
+    </div>
+
+  </div>
+
+  <div class="grid">
+
+    <div class="card" id="rateCard">
+      <div class="label">
+        現在レート
+      </div>
+
+      <div class="value rate" id="rateText">
+        50 STAR / ¥1
+      </div>
+
+      <div class="small">
+        自動変動中
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">
+        所持スターコイン
+      </div>
+
+      <div class="value" id="coinText">
+        0 STAR
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">
+        現金
+      </div>
+
+      <div class="value cash" id="cashText">
+        ¥10000
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">
+        利益
+      </div>
+
+      <div class="value profit plus" id="profitText">
+        ¥0
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="label">
+      取引
+    </div>
+
+    <div class="trade-grid">
+
+      <div class="trade-row">
+
+        <button class="buy" id="buy1Btn">
+          1 STAR 買う
+        </button>
+
+        <button class="buy" id="buyCustomBtn">
+          カスタム購入
+        </button>
+
+      </div>
+
+      <div class="trade-row">
+
+        <button class="sell" id="sell1Btn">
+          1 STAR 売る
+        </button>
+
+        <button class="sell" id="sellCustomBtn">
+          カスタム売却
+        </button>
+
+      </div>
+<!-- 取引カードの下あたりに追加 -->
+
+<div class="card">
+
+  <div class="label">
+    データ管理
+  </div>
+
+  <div class="trade-row">
+
+    <button
+      id="saveBtn"
+      style="
+        background:linear-gradient(135deg,#3b82f6,#2563eb);
+      "
+    >
+      今すぐ保存
+    </button>
+
+    <button
+      id="resetBtn"
+      style="
+        background:linear-gradient(135deg,#f97316,#ea580c);
+      "
+    >
+      リセット
+    </button>
+
+  </div>
+
+  <div class="small" style="margin-top:10px;">
+    自動保存対応
+  </div>
+
+</div>
+      <div>
+
+        <div class="small" style="margin-bottom:6px;">
+          カスタム数量（デフォルト10）
+        </div>
+
+        <input
+          type="number"
+          id="customAmount"
+          value="10"
+          min="1"
+        >
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="log" id="log">
+
+    <div class="log-item">
+      システム開始
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* =========================
+   基本データ
+========================= */
+
+let rate = 50;
+
+let cash = 10000;
+
+let starCoins = 0;
+
+const START_CASH = 10000;
+
+/* =========================
+   要素
+========================= */
+
+const rateText =
+  document.getElementById("rateText");
+
+const cashText =
+  document.getElementById("cashText");
+
+const coinText =
+  document.getElementById("coinText");
+
+const profitText =
+  document.getElementById("profitText");
+
+const log =
+  document.getElementById("log");
+
+const rateCard =
+  document.getElementById("rateCard");
+
+/* =========================
+   グラフ
+========================= */
+
+const ctx =
+  document.getElementById("chart");
+
+const labels = [];
+
+const graphData = [];
+
+const chart = new Chart(ctx,{
+  type:"line",
+
+  data:{
+    labels,
+
+    datasets:[{
+      label:"スターコインレート",
+      data:graphData,
+      tension:0.25,
+      borderWidth:3,
+      pointRadius:0
+    }]
+  },
+
+  options:{
+    responsive:true,
+
+    maintainAspectRatio:false,
+
+    plugins:{
+      legend:{
+        labels:{
+          color:"white"
+        }
+      }
+    },
+
+    scales:{
+      x:{
+        ticks:{
+          color:"#94a3b8"
+        },
+
+        grid:{
+          color:"rgba(255,255,255,.06)"
+        }
+      },
+
+      y:{
+        ticks:{
+          color:"#94a3b8"
+        },
+
+        grid:{
+          color:"rgba(255,255,255,.06)"
+        }
+      }
+    }
+  }
+});
+
+/* =========================
+   ログ
+========================= */
+
+function addLog(text){
+
+  const div =
+    document.createElement("div");
+
+  div.className = "log-item";
+
+  div.textContent =
+    "[" +
+    new Date().toLocaleTimeString() +
+    "] " +
+    text;
+
+  log.prepend(div);
+
+}
+
+/* =========================
+   UI更新
+========================= */
+
+function updateUI(){
+
+  rateText.textContent =
+    rate.toFixed(2) +
+    " STAR / ¥1";
+
+  cashText.textContent =
+    "¥" +
+    Math.floor(cash);
+
+  coinText.textContent =
+    Math.floor(starCoins) +
+    " STAR";
+
+  const asset =
+    cash +
+    (starCoins / rate);
+
+  const profit =
+    asset - START_CASH;
+
+  profitText.textContent =
+    (profit >= 0 ? "+" : "") +
+    "¥" +
+    Math.floor(profit);
+
+  profitText.className =
+    "value profit " +
+    (profit >= 0 ? "plus" : "minus");
+
+}
+
+/* =========================
+   レート変動
+========================= */
+
+function updateRate(){
+
+  const move =
+    (Math.random() - 0.5) * 8;
+
+  rate += move;
+
+  if(rate < 5){
+    rate = 5;
+  }
+
+  labels.push("");
+
+  graphData.push(
+    Number(rate.toFixed(2))
+  );
+
+  if(labels.length > 50){
+
+    labels.shift();
+
+    graphData.shift();
+
+  }
+
+  chart.update();
+
+  updateUI();
+
+  rateCard.classList.remove("flash");
+
+  void rateCard.offsetWidth;
+
+  rateCard.classList.add("flash");
+
+}
+
+/* =========================
+   カスタム量
+========================= */
+
+function getCustomAmount(){
+
+  const value =
+    Number(
+      document.getElementById("customAmount").value
+    );
+
+  if(
+    isNaN(value) ||
+    value <= 0
+  ){
+    return 10;
+  }
+
+  return Math.floor(value);
+
+}
+
+/* =========================
+   購入
+========================= */
+
+function buyStar(amount){
+
+  const cost =
+    amount / rate;
+
+  if(cash < cost){
+
+    addLog(
+      "現金不足で購入失敗"
+    );
+
+    return;
+  }
+
+  starCoins += amount;
+
+  cash -= cost;
+
+  addLog(
+    amount +
+    " STAR 購入（¥" +
+    Math.floor(cost) +
+    "）"
+  );
+
+  updateUI();
+
+}
+
+/* =========================
+   売却
+========================= */
+
+function sellStar(amount){
+
+  if(starCoins < amount){
+
+    addLog(
+      "STAR不足で売却失敗"
+    );
+
+    return;
+  }
+
+  const yen =
+    amount / rate;
+
+  starCoins -= amount;
+
+  cash += yen;
+
+  addLog(
+    amount +
+    " STAR 売却（¥" +
+    Math.floor(yen) +
+    "）"
+  );
+
+  updateUI();
+
+}
+
+/* =========================
+   ボタン
+========================= */
+
+document
+.getElementById("buy1Btn")
+.addEventListener("click",()=>{
+
+  buyStar(1);
+
+});
+
+document
+.getElementById("buyCustomBtn")
+.addEventListener("click",()=>{
+
+  buyStar(
+    getCustomAmount()
+  );
+
+});
+
+document
+.getElementById("sell1Btn")
+.addEventListener("click",()=>{
+
+  sellStar(1);
+
+});
+
+document
+.getElementById("sellCustomBtn")
+.addEventListener("click",()=>{
+
+  sellStar(
+    getCustomAmount()
+  );
+
+});
+
+/* =========================
+   初期グラフ
+========================= */
+
+for(let i=0;i<25;i++){
+
+  labels.push("");
+
+  graphData.push(rate);
+
+}
+<!-- script の一番下に追加 -->
+
+/* =========================
+   セーブ
+========================= */
+
+function saveData(){
+
+  const save = {
+
+    rate,
+    cash,
+    starCoins,
+    labels,
+    graphData
+
+  };
+
+  localStorage.setItem(
+    "starCoinSave",
+    JSON.stringify(save)
+  );
+
+}
+
+/* =========================
+   ロード
+========================= */
+
+function loadData(){
+
+  const raw =
+    localStorage.getItem("starCoinSave");
+
+  if(!raw){
+    return;
+  }
+
+  try{
+
+    const save =
+      JSON.parse(raw);
+
+    if(save.rate !== undefined)
+      rate = save.rate;
+
+    if(save.cash !== undefined)
+      cash = save.cash;
+
+    if(save.starCoins !== undefined)
+      starCoins = save.starCoins;
+
+    if(Array.isArray(save.labels)){
+
+      labels.length = 0;
+
+      save.labels.forEach(v=>{
+        labels.push(v);
+      });
+
+    }
+
+    if(Array.isArray(save.graphData)){
+
+      graphData.length = 0;
+
+      save.graphData.forEach(v=>{
+        graphData.push(v);
+      });
+
+    }
+
+    chart.update();
+
+    updateUI();
+
+    addLog("保存データを読み込みました");
+
+  }catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+/* =========================
+   リセット
+========================= */
+/* =========================
+   初期グラフ
+========================= */
+
+function createDefaultGraph(){
+
+  labels.length = 0;
+  graphData.length = 0;
+
+  for(let i=0;i<25;i++){
+
+    labels.push("");
+    graphData.push(rate);
+
+  }
+
+}
+function loadData(){
+
+  const raw =
+    localStorage.getItem("starCoinSave");
+
+  if(!raw){
+
+    createDefaultGraph();
+    chart.update();
+    updateUI();
+
+    return;
+  }
+
+  try{
+
+    const save =
+      JSON.parse(raw);
+
+    if(save.rate !== undefined)
+      rate = save.rate;
+
+    if(save.cash !== undefined)
+      cash = save.cash;
+
+    if(save.starCoins !== undefined)
+      starCoins = save.starCoins;
+
+    if(Array.isArray(save.labels)){
+
+      labels.length = 0;
+
+      save.labels.forEach(v=>{
+        labels.push(v);
+      });
+
+    }
+
+    if(Array.isArray(save.graphData)){
+
+      graphData.length = 0;
+
+      save.graphData.forEach(v=>{
+        graphData.push(v);
+      });
+
+    }
+
+    chart.update();
+
+    updateUI();
+
+    addLog("保存データを読み込みました");
+
+  }catch(e){
+
+    console.error(e);
+
+    createDefaultGraph();
+
+  }
+
+}
+
+/* =========================
+   ボタン
+========================= */
+
+document
+.getElementById("saveBtn")
+.addEventListener("click",()=>{
+
+  saveData();
+
+  addLog("手動保存しました");
+
+});
+
+document
+.getElementById("resetBtn")
+.addEventListener("click",()=>{
+
+  resetData();
+
+});
+
+/* =========================
+   自動保存
+========================= */
+
+loadData();
+
+chart.update();
+
+updateUI();
+
+setInterval(updateRate,1200);
+
+</script>
+
+</body>
+</html>
