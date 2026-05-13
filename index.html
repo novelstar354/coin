@@ -587,7 +587,7 @@ function updateRate(){
   void rateCard.offsetWidth;
 
   rateCard.classList.add("flash");
-
+saveData();
 }
 
 /* =========================
@@ -640,7 +640,7 @@ function buyStar(amount){
     Math.floor(cost) +
     "）"
   );
-
+saveData();
   updateUI();
 
 }
@@ -673,7 +673,7 @@ function sellStar(amount){
     Math.floor(yen) +
     "）"
   );
-
+saveData();
   updateUI();
 
 }
@@ -729,7 +729,7 @@ for(let i=0;i<25;i++){
   graphData.push(rate);
 
 }
-<!-- script の一番下に追加 -->
+
 
 /* =========================
    セーブ
@@ -835,69 +835,32 @@ function createDefaultGraph(){
   }
 
 }
-function loadData(){
+/* =========================
+   リセット
+========================= */
 
-  const raw =
-    localStorage.getItem("starCoinSave");
+function resetData(){
 
-  if(!raw){
-
-    createDefaultGraph();
-    chart.update();
-    updateUI();
-
+  if(!confirm("データをリセットしますか？")){
     return;
   }
 
-  try{
+  rate = 50;
+  cash = 10000;
+  starCoins = 0;
 
-    const save =
-      JSON.parse(raw);
+  createDefaultGraph();
 
-    if(save.rate !== undefined)
-      rate = save.rate;
+  chart.update();
 
-    if(save.cash !== undefined)
-      cash = save.cash;
+  updateUI();
 
-    if(save.starCoins !== undefined)
-      starCoins = save.starCoins;
+  localStorage.removeItem("starCoinSave");
 
-    if(Array.isArray(save.labels)){
-
-      labels.length = 0;
-
-      save.labels.forEach(v=>{
-        labels.push(v);
-      });
-
-    }
-
-    if(Array.isArray(save.graphData)){
-
-      graphData.length = 0;
-
-      save.graphData.forEach(v=>{
-        graphData.push(v);
-      });
-
-    }
-
-    chart.update();
-
-    updateUI();
-
-    addLog("保存データを読み込みました");
-
-  }catch(e){
-
-    console.error(e);
-
-    createDefaultGraph();
-
-  }
+  addLog("データをリセットしました");
 
 }
+
 
 /* =========================
    ボタン
