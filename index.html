@@ -1122,6 +1122,35 @@ document
 
   adminOverlay.style.display = "none";
 
+  // ログアウト処理
+  adminLoggedIn = false;
+
+  loginArea.style.display = "block";
+  adminArea.style.display = "none";
+
+  document.getElementById("adminPassword").value = "";
+
+  addLog("管理者モードログアウト");
+
+});
+
+document.addEventListener("keydown",(e)=>{
+
+  if(e.key === "Escape"){
+
+    adminOverlay.style.display = "none";
+
+    adminLoggedIn = false;
+
+    loginArea.style.display = "block";
+    adminArea.style.display = "none";
+
+    document.getElementById("adminPassword").value = "";
+
+    addLog("管理者モードログアウト（ESC）");
+
+  }
+
 });
 
 /* =========================
