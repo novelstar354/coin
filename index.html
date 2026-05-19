@@ -226,10 +226,207 @@ canvas{
   }
 
 }
+/* =========================
+   管理者パネル
+========================= */
+
+#adminOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  backdrop-filter:blur(6px);
+}
+
+#adminPanel{
+  width:95%;
+  max-width:520px;
+  background:#050816;
+  border:1px solid #1e293b;
+  border-radius:24px;
+  padding:24px;
+  box-shadow:
+    0 0 50px rgba(56,189,248,.2);
+  font-family:monospace;
+}
+
+.admin-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.admin-title{
+  font-size:24px;
+  font-weight:900;
+  color:#38bdf8;
+  letter-spacing:2px;
+}
+
+#closeAdmin{
+  width:42px;
+  height:42px;
+  border:none;
+  border-radius:12px;
+  background:#ef4444;
+  color:white;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.admin-label{
+  color:#94a3b8;
+  margin-bottom:8px;
+  font-size:13px;
+}
+
+.admin-section{
+  margin-top:18px;
+}
+
+.adminBtn{
+  width:100%;
+  margin-top:10px;
+  border:none;
+  border-radius:14px;
+  padding:14px;
+  font-weight:800;
+  color:white;
+  cursor:pointer;
+}
+
+.adminBtn.green{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+.adminBtn.red{
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+.adminBtn.blue{
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
+}
+
+.adminBtn.yellow{
+  background:linear-gradient(135deg,#facc15,#eab308);
+  color:#111827;
+}
 </style>
 </head>
 <body>
+<!-- =========================
+     管理者パネル
+========================= -->
 
+<div id="adminOverlay">
+
+  <div id="adminPanel">
+
+    <div class="admin-top">
+      <div class="admin-title">
+        STAR SYSTEM TERMINAL
+      </div>
+
+      <button id="closeAdmin">
+        ×
+      </button>
+    </div>
+
+    <div id="loginArea">
+
+      <div class="admin-label">
+        ACCESS PASSWORD
+      </div>
+
+      <input
+        type="password"
+        id="adminPassword"
+        placeholder="Password"
+      >
+
+      <button id="loginBtn" class="adminBtn blue">
+        LOGIN
+      </button>
+
+    </div>
+
+    <div id="adminArea" style="display:none;">
+
+      <div class="admin-section">
+
+        <div class="admin-label">
+          STAR追加
+        </div>
+
+        <input
+          type="number"
+          id="giveStarInput"
+          placeholder="追加量"
+        >
+
+        <button id="giveStarBtn" class="adminBtn green">
+          STAR追加
+        </button>
+
+      </div>
+
+      <div class="admin-section">
+
+        <div class="admin-label">
+          レート操作
+        </div>
+
+        <input
+          type="number"
+          id="setRateInput"
+          placeholder="新レート"
+        >
+
+        <button id="setRateBtn" class="adminBtn yellow">
+          レート変更
+        </button>
+
+      </div>
+
+      <div class="admin-section">
+
+        <div class="admin-label">
+          現金追加
+        </div>
+
+        <input
+          type="number"
+          id="giveCashInput"
+          placeholder="追加現金"
+        >
+
+        <button id="giveCashBtn" class="adminBtn blue">
+          現金追加
+        </button>
+
+      </div>
+
+      <div class="admin-section">
+
+        <div class="admin-label">
+          凍結モード
+        </div>
+
+        <button id="freezeBtn" class="adminBtn red">
+          凍結OFF
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 <div class="container">
 
   <div class="title">
@@ -343,7 +540,7 @@ canvas{
       "
     >
       今すぐ保存
-    </button>
+    <!--</button>
 
     <button
       id="resetBtn"
@@ -352,7 +549,7 @@ canvas{
       "
     >
       リセット
-    </button>
+    </button>-->
 
   </div>
 
@@ -881,6 +1078,224 @@ function createDefaultGraph(){
 
 }
 /* =========================
+   管理者モード
+========================= */
+
+let adminLoggedIn = false;
+
+let freezeMode = false;
+
+const adminOverlay =
+  document.getElementById("adminOverlay");
+
+const loginArea =
+  document.getElementById("loginArea");
+
+const adminArea =
+  document.getElementById("adminArea");
+
+/* =========================
+   起動
+========================= */
+
+document.addEventListener("keydown",(e)=>{
+
+  if(
+    e.ctrlKey &&
+    e.altKey &&
+    e.key.toLowerCase() === "l"
+  ){
+
+    adminOverlay.style.display = "flex";
+
+  }
+
+});
+
+/* =========================
+   閉じる
+========================= */
+
+document
+.getElementById("closeAdmin")
+.addEventListener("click",()=>{
+
+  adminOverlay.style.display = "none";
+
+});
+
+/* =========================
+   ログイン
+========================= */
+
+document
+.getElementById("loginBtn")
+.addEventListener("click",()=>{
+
+  const pass =
+    document.getElementById("adminPassword").value;
+
+  if(pass !== "appleQer!"){
+
+    alert("ACCESS DENIED");
+
+    return;
+
+  }
+
+  adminLoggedIn = true;
+
+  loginArea.style.display = "none";
+
+  adminArea.style.display = "block";
+
+  addLog("管理者モードログイン");
+
+});
+
+/* =========================
+   STAR追加
+========================= */
+
+document
+.getElementById("giveStarBtn")
+.addEventListener("click",()=>{
+
+  const amount =
+    Number(
+      document.getElementById("giveStarInput").value
+    );
+
+  if(
+    isNaN(amount) ||
+    amount <= 0
+  ){
+    return;
+  }
+
+  starCoins += Math.floor(amount);
+
+  saveData();
+
+  updateUI();
+
+  addLog(
+    "管理者: " +
+    Math.floor(amount) +
+    " STAR追加"
+  );
+
+});
+
+/* =========================
+   レート変更
+========================= */
+
+document
+.getElementById("setRateBtn")
+.addEventListener("click",()=>{
+
+  const value =
+    Number(
+      document.getElementById("setRateInput").value
+    );
+
+  if(
+    isNaN(value) ||
+    value <= 0
+  ){
+    return;
+  }
+
+  rate = value;
+
+  chart.update();
+
+  updateUI();
+
+  saveData();
+
+  addLog(
+    "管理者: レート変更 → " +
+    value
+  );
+
+});
+
+/* =========================
+   現金追加
+========================= */
+
+document
+.getElementById("giveCashBtn")
+.addEventListener("click",()=>{
+
+  const amount =
+    Number(
+      document.getElementById("giveCashInput").value
+    );
+
+  if(
+    isNaN(amount) ||
+    amount <= 0
+  ){
+    return;
+  }
+
+  cash += amount;
+
+  saveData();
+
+  updateUI();
+
+  addLog(
+    "管理者: ¥" +
+    Math.floor(amount) +
+    "追加"
+  );
+
+});
+
+/* =========================
+   凍結モード
+========================= */
+
+document
+.getElementById("freezeBtn")
+.addEventListener("click",()=>{
+
+  freezeMode = !freezeMode;
+
+  document.getElementById("freezeBtn")
+  .textContent =
+    freezeMode
+    ? "凍結ON"
+    : "凍結OFF";
+
+  addLog(
+    "管理者: 凍結モード " +
+    (freezeMode ? "ON" : "OFF")
+  );
+
+});
+
+/* =========================
+   レート変動修正
+========================= */
+
+const originalUpdateRate =
+  updateRate;
+
+updateRate = function(){
+
+  if(freezeMode){
+    return;
+  }
+
+  originalUpdateRate();
+
+};
+/* =========================
    リセット
 ========================= */
 
@@ -909,7 +1324,64 @@ localStorage.setItem(
 
 }
 
+/* =========================
+   管理者モード
+========================= */
 
+/*document.addEventListener("keydown",(e)=>{
+
+  if(
+    e.ctrlKey &&
+    e.altKey &&
+    e.key.toLowerCase() === "l"
+  ){
+
+    const pass =
+      prompt("管理者パスワード");
+
+    if(pass !== "appleQer!"){
+      alert("パスワードが違います");
+      return;
+    }
+
+    const amount =
+      Number(
+        prompt("増やすSTAR数")
+      );
+
+    if(
+      isNaN(amount) ||
+      amount <= 0
+    ){
+      alert("無効な数値");
+      return;
+    }
+
+    starCoins += Math.floor(amount);
+
+    localStorage.setItem(
+      "starCoins",
+      Math.floor(starCoins)
+    );
+
+    saveData();
+
+    updateUI();
+
+    addLog(
+      "管理者モード: " +
+      Math.floor(amount) +
+      " STAR追加"
+    );
+
+    alert(
+      Math.floor(amount) +
+      " STAR追加しました"
+    );
+
+  }
+
+});*/
 /* =========================
    ボタン
 ========================= */
