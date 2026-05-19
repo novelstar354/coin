@@ -403,7 +403,10 @@ let rate = 50;
 
 let cash = 10000;
 
-let starCoins = 0;
+let starCoins =
+  Number(
+    localStorage.getItem("starCoins")
+  ) || 0;
 
 const START_CASH = 10000;
 
@@ -491,7 +494,16 @@ const chart = new Chart(ctx,{
     }
   }
 });
+window.addEventListener("storage",()=>{
 
+  starCoins =
+    Number(
+      localStorage.getItem("starCoins")
+    ) || 0;
+
+  updateUI();
+
+});
 /* =========================
    ログ
 ========================= */
@@ -751,7 +763,10 @@ function saveData(){
     "starCoinSave",
     JSON.stringify(save)
   );
-
+localStorage.setItem(
+  "starCoins",
+  Math.floor(starCoins)
+);
 }
 
 /* =========================
@@ -804,7 +819,10 @@ function loadData(){
     chart.update();
 
     updateUI();
-
+localStorage.setItem(
+  "starCoins",
+  Math.floor(starCoins)
+);
     addLog("保存データを読み込みました");
 
   }catch(e){
@@ -814,7 +832,34 @@ function loadData(){
   }
 
 }
+/* =========================
+   銀行サイト同期
+========================= */
 
+function syncStarCoins(){
+
+  const saved =
+    Number(
+      localStorage.getItem("starCoins")
+    ) || 0;
+
+  if(saved !== starCoins){
+
+    starCoins = saved;
+
+    updateUI();
+
+    addLog(
+      "銀行データと同期しました"
+    );
+
+  }
+
+}
+
+/* 1秒ごと同期 */
+
+setInterval(syncStarCoins,1000);
 /* =========================
    リセット
 ========================= */
@@ -856,7 +901,10 @@ function resetData(){
   updateUI();
 
   localStorage.removeItem("starCoinSave");
-
+localStorage.setItem(
+  "starCoins",
+  0
+);
   addLog("データをリセットしました");
 
 }
