@@ -540,9 +540,9 @@ canvas{
       "
     >
       今すぐ保存
-    <!--</button>
+    </button>
 
-    <button
+    <!--<button
       id="resetBtn"
       style="
         background:linear-gradient(135deg,#f97316,#ea580c);
@@ -646,14 +646,25 @@ const chart = new Chart(ctx,{
   data:{
     labels,
 
-    datasets:[{
+   /* datasets:[{
       label:"スターコインレート",
       data:graphData,
       tension:0.25,
       borderWidth:3,
       pointRadius:0
     }]
-  },
+  },*/
+    datasets:[{
+  label:"スターコインレート",
+  data:graphData,
+  tension:0.25,
+  borderWidth:3,
+  pointRadius:0,
+  borderColor:"#facc15",
+  backgroundColor:"rgba(250,204,21,.12)",
+  fill:true
+}]
+},
 
   options:{
     responsive:true,
@@ -762,7 +773,7 @@ function updateUI(){
    レート変動
 ========================= */
 
-function updateRate(){
+/*function updateRate(){
 
   const move =
     (Math.random() - 0.5) * 8;
@@ -797,6 +808,15 @@ function updateRate(){
 
   rateCard.classList.add("flash");
 saveData();
+}*/
+function updateRate(){
+
+  if(freezeMode){
+    return;
+  }
+
+  baseUpdateRate();
+
 }
 
 /* =========================
@@ -1083,7 +1103,6 @@ function createDefaultGraph(){
 
 let adminLoggedIn = false;
 
-let freezeMode = false;
 
 const adminOverlay =
   document.getElementById("adminOverlay");
@@ -1311,19 +1330,55 @@ document
 /* =========================
    レート変動修正
 ========================= */
+let freezeMode = false;
 
-const originalUpdateRate =
-  updateRate;
 
-updateRate = function(){
 
-  if(freezeMode){
-    return;
+/* =========================
+   レート変動修正
+========================= */
+
+
+/* 元の変動処理 */
+function updateRate(){
+
+  const move =
+    (Math.random() - 0.5) * 8;
+
+  rate += move;
+
+  if(rate < 5){
+    rate = 5;
   }
 
-  originalUpdateRate();
+  labels.push("");
 
-};
+  graphData.push(
+    Number(rate.toFixed(2))
+  );
+
+  if(labels.length > 50){
+
+    labels.shift();
+    graphData.shift();
+
+  }
+
+  chart.update();
+
+  updateUI();
+
+  rateCard.classList.remove("flash");
+
+  void rateCard.offsetWidth;
+
+  rateCard.classList.add("flash");
+
+  saveData();
+
+}
+
+
 /* =========================
    リセット
 ========================= */
@@ -1425,13 +1480,7 @@ document
 
 });
 
-document
-.getElementById("resetBtn")
-.addEventListener("click",()=>{
 
-  resetData();
-
-});
 
 /* =========================
    自動保存
