@@ -811,15 +811,7 @@ function updateUI(){
   rateCard.classList.add("flash");
 saveData();
 }*/
-function updateRate(){
 
-  if(freezeMode){
-    return;
-  }
-
-  baseUpdateRate();
-
-}
 
 /* =========================
    カスタム量
@@ -1207,23 +1199,27 @@ document
    STAR追加
 ========================= */
 
+/* =========================
+   STAR増減
+========================= */
+
 document
 .getElementById("giveStarBtn")
 .addEventListener("click",()=>{
 
-  const amount =
-    Number(
-      document.getElementById("giveStarInput").value
-    );
+  const amount = Number(
+    document.getElementById("giveStarInput").value
+  );
 
-  if(
-    isNaN(amount) ||
-    amount <= 0
-  ){
+  if(isNaN(amount)){
     return;
   }
 
   starCoins += Math.floor(amount);
+
+  if(starCoins < 0){
+    starCoins = 0;
+  }
 
   saveData();
 
@@ -1231,8 +1227,9 @@ document
 
   addLog(
     "管理者: " +
+    (amount >= 0 ? "+" : "") +
     Math.floor(amount) +
-    " STAR追加"
+    " STAR"
   );
 
 });
@@ -1276,32 +1273,37 @@ document
    現金追加
 ========================= */
 
+/* =========================
+   現金増減
+========================= */
+
 document
 .getElementById("giveCashBtn")
 .addEventListener("click",()=>{
 
-  const amount =
-    Number(
-      document.getElementById("giveCashInput").value
-    );
+  const amount = Number(
+    document.getElementById("giveCashInput").value
+  );
 
-  if(
-    isNaN(amount) ||
-    amount <= 0
-  ){
+  if(isNaN(amount)){
     return;
   }
 
   cash += amount;
+
+  if(cash < 0){
+    cash = 0;
+  }
 
   saveData();
 
   updateUI();
 
   addLog(
-    "管理者: ¥" +
-    Math.floor(amount) +
-    "追加"
+    "管理者: " +
+    (amount >= 0 ? "+" : "") +
+    "¥" +
+    Math.floor(amount)
   );
 
 });
@@ -1328,7 +1330,6 @@ document
   );
 
 });
-    
 
 /* =========================
    レート変動修正
@@ -1342,8 +1343,11 @@ let freezeMode = false;
 ========================= */
 
 
-/* 元の変動処理 */
 function updateRate(){
+
+  if(freezeMode){
+    return;
+  }
 
   const move =
     (Math.random() - 0.5) * 8;
@@ -1361,10 +1365,8 @@ function updateRate(){
   );
 
   if(labels.length > 50){
-
     labels.shift();
     graphData.shift();
-
   }
 
   chart.update();
@@ -1372,16 +1374,38 @@ function updateRate(){
   updateUI();
 
   rateCard.classList.remove("flash");
-
   void rateCard.offsetWidth;
-
   rateCard.classList.add("flash");
 
   saveData();
+}
+
+let tapCount = 0;
+let firstTapTime = 0;
+
+function secretAdminOpen(){
+
+  const now = Date.now();
+
+  if(now - firstTapTime > 1000){
+    tapCount = 0;
+    firstTapTime = now;
+  }
+
+  tapCount++;
+
+  if(tapCount >= 3){
+
+    tapCount = 0;
+
+    document.getElementById("adminOverlay").style.display = "flex";
+
+  }
 
 }
 
-
+rateCard.addEventListener("click", secretAdminOpen);
+rateCard.addEventListener("touchstart", secretAdminOpen);
 /* =========================
    リセット
 ========================= */
